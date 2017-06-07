@@ -1,0 +1,74 @@
+<?php $this->partial('shared/header'); ?>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            
+            <div class="panel panel-default">
+                <div class="panel-body text-center" id="total-realtime">0</div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading">Devices</div>
+                <div class="panel-body"><canvas id="graph-device"></canvas></div>
+            </div>
+            
+            <div>
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a href="#keywords" aria-controls="keywords" role="tab" data-toggle="tab">Keywords</a></li>
+                    <li role="presentation"><a href="#sources" aria-controls="sources" role="tab" data-toggle="tab">Sources</a></li>
+                    <li role="presentation" class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#referral" aria-controls="referral" role="tab" data-toggle="tab">Referral</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane active" id="keywords">
+                        <div class="panel panel-default">
+                            <table class="table table-hover" id="list-keywords"></table>
+                        </div>
+                    </div>
+                    
+                    <div role="tabpanel" class="tab-pane" id="sources">
+                        <div class="panel panel-default">
+                            <table class="table table-hover" id="list-sources"></table>
+                        </div>
+                    </div>
+                    
+                    <div role="tabpanel" class="tab-pane" id="referral">
+                        <div class="panel panel-default">
+                            <table class="table table-hover" id="list-referrals"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        <div class="col-md-9">
+            <div class="page-header">
+                <h3><?= $title ?></h3>
+            </div>
+            
+            <?php if($error): ?>
+            <div class="alert alert-danger"><strong>Error!</strong> <?= $error ?></div>
+            <?php else: ?>
+            
+            <canvas id="realtime-chart"></canvas>
+            
+            <table class="table table-hover">
+                <thead>
+                    <tr><th>Page</th><th>Total</th></tr>
+                </thead>
+                <tbody id="list-pages"></tbody>
+            </table>
+            
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<script>window.MyGA = { token: '<?= $token ?>', view: '<?= $ga_view ?>' };</script>
+
+<?php $this->partial('shared/footer'); ?>

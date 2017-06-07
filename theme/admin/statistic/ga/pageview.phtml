@@ -1,0 +1,39 @@
+<?php $this->partial('shared/header'); ?>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+        
+            <form id="ga-filter">
+                <?= $this->form->field('time-start'); ?>
+                <?= $this->form->field('time-end'); ?>
+                <?= $this->form->field('group'); ?>
+                <div class="text-right">
+                    <button class="btn btn-default">Filter</button>
+                </div>
+            </form>
+            
+            <hr>
+            
+            <table class="table table-bordered">
+                <tbody id="resume"></tbody>
+            </table>
+            
+        </div>
+        <div class="col-md-9">
+            <div class="page-header">
+                <h3><?= $title ?></h3>
+            </div>
+            
+            <?php if($error): ?>
+            <div class="alert alert-danger"><strong>Error!</strong> <?= $error ?></div>
+            <?php else: ?>
+            <div id="graph"></div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<script>window.MyGA = { token: '<?= $token ?>', view: '<?= $ga_view ?>' };</script>
+
+<?php $this->partial('shared/footer'); ?>
