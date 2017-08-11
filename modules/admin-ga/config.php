@@ -52,7 +52,7 @@ return [
                 'submenu'   => [
                     'pageview'   => [
                         'label'     => 'Pageview',
-                        'perms'     => 'read_ga_pageviews',
+                        'perms'     => 'read_ga_pageview',
                         'target'    => 'adminGAPageview',
                         'order'     => 20
                     ],
