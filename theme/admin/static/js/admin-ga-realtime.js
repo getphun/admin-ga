@@ -339,6 +339,9 @@ window.D = {
                 referrals: {}
             };
         
+        if(!res.rows)
+            return;
+        
         for(var i=0; i<res.rows.length; i++){
             var row = res.rows[i];
             row[6] = parseInt(row[6]);
