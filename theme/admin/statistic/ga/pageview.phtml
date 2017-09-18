@@ -7,17 +7,33 @@
             <form id="ga-filter">
                 <?= $this->form->field('time-start'); ?>
                 <?= $this->form->field('time-end'); ?>
-                <?= $this->form->field('group'); ?>
-                <div class="text-right">
-                    <button class="btn btn-default">Filter</button>
+                <div class="row">
+                    <div class="col-md-8">
+                        <?= $this->form->field('group'); ?>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-right">
+                            <button class="btn btn-block btn-default">Filter</button>
+                        </div>
+                    </div>
                 </div>
             </form>
             
             <hr>
             
-            <table class="table table-bordered">
-                <tbody id="resume"></tbody>
-            </table>
+            <div class="panel panel-default">
+                <div class="panel-heading">Total</div>
+                <table class="table table-bordered">
+                    <tbody id="resume-total"></tbody>
+                </table>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading">Average</div>
+                <table class="table table-bordered">
+                    <tbody id="resume-average"></tbody>
+                </table>
+            </div>
             
         </div>
         <div class="col-md-9">
@@ -34,6 +50,6 @@
     </div>
 </div>
 
-<script>window.MyGA = { token: '<?= $token ?>', view: '<?= $ga_view ?>' };</script>
+<script>window.MyGA={token:'<?= $token ?>',view:'<?= $ga_view ?>'};</script>
 
 <?php $this->partial('shared/footer'); ?>

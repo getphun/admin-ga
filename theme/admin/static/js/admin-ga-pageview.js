@@ -41,6 +41,9 @@ window.D = {
         if(!window.gapi || !window.MyGA || !window.MyGA.token)
             return;
         
+        if(!window.MyGA.view)
+            return D.alert('Whoops', 'Please fill site setting <code>google_analytics_view</code> to continue.');
+        
         gapi.auth.setToken({access_token: MyGA.token});
         
         D.el.form    = $('#ga-filter');
@@ -48,7 +51,9 @@ window.D = {
         D.el.fTStart = $('#field-time-start');
         D.el.fTEnd   = $('#field-time-end');
         D.el.graph   = $('#graph');
-        D.el.resume  = $('#resume');
+        
+        D.el.resumeTotal    = $('#resume-total');
+        D.el.resumeAverage  = $('#resume-average');
         
         D.el.fTStart.parent().on('dp.change', D.timeChange );
         D.el.fTEnd.parent().on('dp.change', D.timeChange );
@@ -174,6 +179,18 @@ window.D = {
                         yAxes: [{
                             display: false
                         }]
+                    },
+                    elements: {
+                        line: {
+                            tension: 0
+                        }
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(t,d){
+                                return d.datasets[t.datasetIndex].label + ': ' + t.yLabel.toLocaleString();
+                            }
+                        }
                     }
                 }
             };
@@ -290,21 +307,45 @@ window.D = {
     },
     
     genResume: function(res){
-        D.el.resume.html('');
+        D.el.resumeTotal.html('');
+        D.el.resumeAverage.html('');
         
         var rows = res.data.totals[0].values;
         var mats = res.columnHeader.metricHeader.metricHeaderEntries;
         
+        var ttls = [];
+        
         for(var i=0; i<rows.length; i++){
             var tr = $('<tr></tr>');
-            tr.appendTo(D.el.resume);
+            tr.appendTo(D.el.resumeTotal);
             
             var th = $('<th></th>');
             th.text( D.labels[ mats[i].name ] );
             th.appendTo(tr);
+            ttls.push(D.labels[ mats[i].name ]);
             
             var td = $('<td class="text-right"></td>');
             td.html( parseInt(rows[i]).toLocaleString() );
+            td.appendTo(tr);
+        }
+        
+        var avgs = [0,0,0];
+        for(var i=0; i<res.data.rowCount; i++){
+            var row = res.data.rows[i].metrics[0].values;
+            for(var j=0; j<row.length; j++)
+                avgs[j]+= parseInt(row[j]);
+        }
+        
+        for(var i=0; i<avgs.length; i++){
+            var tr = $('<tr></tr>');
+            tr.appendTo(D.el.resumeAverage);
+            
+            var th = $('<th></th>');
+            th.text( ttls[i] );
+            th.appendTo(tr);
+            
+            var td = $('<td class="text-right"></td>');
+            td.html( (Math.ceil(avgs[i]/res.data.rowCount)).toLocaleString() );
             td.appendTo(tr);
         }
     },

@@ -230,7 +230,7 @@ window.D = {
                                     yAxisID: "y-axis-1"
                                 },
                                 {
-                                    label: 'Increase',
+                                    label: 'Increment',
                                     backgroundColor: D.bgColors[1],
                                     borderColor: D.colors[1],
                                     data: preDiff,
@@ -240,6 +240,19 @@ window.D = {
                             ]
                         },
                         options: {
+                            elements: {
+                                line: {
+                                    tension: 0
+                                }
+                            },
+                            tooltips: {
+                                callbacks: {
+                                    label: function(t,d){
+                                        return d.datasets[t.datasetIndex].label + ': ' + t.yLabel.toLocaleString();
+                                    },
+                                    title: function(){ }
+                                }
+                            },
                             scales: {
                                 xAxes: [
                                     {
@@ -300,36 +313,7 @@ window.D = {
         
         D._realtimeChartTotal = total;
     },
-    
-    genReferrals: function(refs){
-        D.el.referralsList.html('');
-        var xrefs = [];
-        
-        for(var k in refs)
-            xrefs.push({total: refs[k], label: k});
-        
-        xrefs.sort(function(a,b){
-            if(a.total != b.total)
-                return b.total - a.total;
-            return a.label < b.label ? -1 : 1;
-        });
-        
-        for(var k in xrefs){
-            var key = xrefs[k];
-            
-            var tr = $('<tr></tr>');
-            D.el.referralsList.append(tr);
-            
-            var td = $('<td></td>');
-            td.appendTo(tr);
-            td.text(key.label);
-            
-            var td = $('<td></td>');
-            td.appendTo(tr);
-            td.text(key.total);
-        }
-    },
-    
+
     genResult: function(res){
         var result = {
                 pages: {},
@@ -379,7 +363,6 @@ window.D = {
         D.genDevices(result.devices);
         D.genKeywords(result.keywords);
         D.genSources(result.sources);
-        D.genReferrals(result.referrals);
         D.genRealtime(res.totalsForAllResults['rt:activeUsers']);
     },
     
