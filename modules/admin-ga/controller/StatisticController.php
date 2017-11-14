@@ -42,8 +42,6 @@ class StatisticController extends \AdminController
                 'js/admin-ga-' . $type . '.js',
                 'https://apis.google.com/js/client.js?onload=gaInit'
             ];
-            if($type == 'realtime')
-                $params['csses'] = ['css/admin-ga-realtime.css'];
         }
         
         return $this->respond('statistic/ga/'.$type, $params);

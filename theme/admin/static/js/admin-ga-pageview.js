@@ -1,115 +1,118 @@
 window.D = {
     _isLoading: false,
     
+    colors: [
+        '#99b433',
+        '#00a300',
+        '#1e7145',
+        '#ff0097',
+        '#9f00a7',
+        '#7e3878',
+        '#603cba',
+        '#00aba9',
+        '#2d89ef',
+        '#2b5797',
+        '#ffc40d',
+        '#e3a21a',
+        '#da532c',
+        '#ee1111',
+        '#b91d47'
+    ],
+    
+    current: {
+        end     : null,
+        start   : null,
+        timly   : null,
+        type    : null
+    },
+    
+    dimentions: {
+        hourly  : [{ name: 'ga:year' }, { name: 'ga:month' }, { name: 'ga:day' }, { name: 'ga:hour' }],
+        daily   : [{ name: 'ga:year' }, { name: 'ga:month' }, { name: 'ga:day' }],
+        monthly : [{ name: 'ga:year' }, { name: 'ga:month' }],
+        yearly  : [{ name: 'ga:year' }]
+    },
+    
+    dimentionsByType: {
+        pageview: undefined,
+        age     : { name: 'ga:userAgeBracket' },
+        country : { name: 'ga:country' },
+        gender  : { name: 'ga:userGender' }
+    },
+    
+    el: {},
+    
+    labels: {
+        'ga:pageviews'  : 'Pageviews',
+        'ga:sessions'   : 'Sessions',
+        'ga:users'      : 'Users',
+        
+        'pageview'      : 'Pageview',
+        'gender'        : 'Gender',
+        'age'           : 'Age',
+        'country'       : 'Country'
+    },
+    
+    metrics: [
+        { expression: 'ga:pageviews' },
+        { expression: 'ga:sessions' },
+        { expression: 'ga:users' }
+    ],
+    
+    
     alert: function(title, message){
         bootbox.alert({
             title: title,
             message: message
         });
-    },
-    
-    colors: [
-        '#FF6384',
-        '#FFCD56',
-        '#36A2EB'
-    ],
-    
-    el: {},
-    
-    labels: {
-        'ga:pageviews': 'Pageviews',
-        'ga:sessions' : 'Sessions',
-        'ga:users'    : 'Users'
-    },
-    
-    months: {
-        '01': 'Jan',
-        '02': 'Feb',
-        '03': 'Mar',
-        '04': 'Apr',
-        '05': 'May',
-        '06': 'Jun',
-        '07': 'Jul',
-        '08': 'Aug',
-        '09': 'Sep',
-        '10': 'Oct',
-        '11': 'Nov',
-        '12': 'Dec'
-    },
-    
-    init: function(){
-        if(!window.gapi || !window.MyGA || !window.MyGA.token)
-            return;
         
-        if(!window.MyGA.view)
-            return D.alert('Whoops', 'Please fill site setting <code>google_analytics_view</code> to continue.');
-        
-        gapi.auth.setToken({access_token: MyGA.token});
-        
-        D.el.form    = $('#ga-filter');
-        D.el.fGroup  = $('#field-group');
-        D.el.fTStart = $('#field-time-start');
-        D.el.fTEnd   = $('#field-time-end');
-        D.el.graph   = $('#graph');
-        
-        D.el.resumeTotal    = $('#resume-total');
-        D.el.resumeAverage  = $('#resume-average');
-        
-        D.el.fTStart.parent().on('dp.change', D.timeChange );
-        D.el.fTEnd.parent().on('dp.change', D.timeChange );
-        
-        D.el.form.submit( D.fetch );
-        D.el.form.submit();
+        return false;
     },
     
     fetch: function(){
         if(D._isLoading)
-            return D.alert('Whoops', 'Please wait until current process finish');
-        D.loading(true);
-        D._isLoading = true;
+            return D.alert('In Progress...', 'Please wait until current process finish');
         
-        var timely = D.el.fGroup.val();
-        var config = {
-                path: 'https://analyticsreporting.googleapis.com/v4/reports:batchGet',
-                method: 'POST',
-                body: {reportRequests:[]}
-            };
-        var query = {
-                viewId: MyGA.view,
-                metrics: [
-                    { expression: 'ga:pageviews' },
-                    { expression: 'ga:sessions' },
-                    { expression: 'ga:users' }
-                ],
-                dateRanges: [{
-                    startDate: D.el.fTStart.val(),
-                    endDate  : D.el.fTEnd.val()
-                }]
-            };
+        var config,
+            dimentions,
+            query;
         
-        switch(timely){
-            case 'hourly':
-                query.dimensions = [{ name: 'ga:year' }, { name: 'ga:month' }, { name: 'ga:day' }, { name: 'ga:hour' }];
-                break;
-            case 'daily':
-                query.dimensions = [{ name: 'ga:year' }, { name: 'ga:month' }, { name: 'ga:day' }];
-                break;
-            case 'monthly':
-                query.dimensions = [{ name: 'ga:year' }, { name: 'ga:month' }];
-                break;
-            case 'yearly':
-                query.dimensions = [{ name: 'ga:year' }];
-                break;
-        }
+        D.current.end   = D.el.fTimeEnd.val();
+        D.current.start = D.el.fTimeStart.val();
+        D.current.type  = D.el.fType.val();
+        D.current.timly = D.el.fGroup.val();
+        
+        config = {
+            path    : 'https://analyticsreporting.googleapis.com/v4/reports:batchGet',
+            method  : 'POST',
+            body    : {
+                reportRequests: []
+            }
+        };
+        
+        dimentions = JSON.parse(JSON.stringify(D.dimentions[D.current.timly]));
+        if(D.dimentionsByType[D.current.type])
+            dimentions.push(D.dimentionsByType[D.current.type]);
+        
+        query = {
+            viewId      : MyGA.view,
+            metrics     : D.metrics,
+            dimensions  : dimentions,
+            dateRanges  : [{
+                startDate   : D.current.start,
+                endDate     : D.current.end
+            }]
+        };
         
         config.body.reportRequests.push(query);
         
+        D.loading(true);
+        D.el.rResult.addClass('hidden');
         gapi.client.request(config).execute(function(res){
-            D._isLoading = false;
             D.loading(false);
             
             if(res.error)
-                return D.alert('Google Analytics Error', res.error.message);
+                return D.alert('Error', res.error.message);
             
             D.genResult(res);
         });
@@ -117,258 +120,157 @@ window.D = {
         return false;
     },
     
-    formatRows: function(res){
-        var result = {};
-        
-        if(!res.data.rows)
-            return result;
-        
-        var rows   = res.data.rows;
-        var dims   = res.columnHeader.dimensions;
-        var matrix = res.columnHeader.metricHeader.metricHeaderEntries;
-        
-        for(var i=0; i<rows.length; i++){
-            var row = rows[i];
-            var key = row.dimensions.join('');
-            
-            var rowDims = {};
-            for(var j=0; j<dims.length; j++)
-                rowDims[dims[j]] = row.dimensions[j];
-            
-            var rowMatr = {};
-            for(var j=0; j<matrix.length; j++)
-                rowMatr[matrix[j].name] = row.metrics[0].values[j];
-            
-            result[key] = {
-                dimensions: rowDims,
-                matrix: rowMatr
-            }
-        }
-        
-        return result;
-    },
-    
     genCanvas: function(){
-        var canvas = $('<canvas></canvas>');
-        var width  = D.el.graph.width();
-        var height = Math.round((width/16)*9);
+        var width  = D.el.rGraph.width();
+        var height = 250;
+        var canvas = $('<canvas/>', { width: width, height: height });
         
-        canvas.attr({ width: width, height: height });
-        D.el.graph.append(canvas);
+        D.el.rGraph.append(canvas);
         
         return canvas;
     },
     
-    genGraph: function(res){
-        var canvas = D.genCanvas();
-        var ctx    = canvas.get(0).getContext('2d');
-        var frows  = D.formatRows(res);
+    genGraph: function(reports){
         
-        var config = {
-                type: 'line',
-                data: {
-                    labels  : D.genGraphLabel(frows, res),
-                    datasets: D.genGraphDataset(frows, res)
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        xAxes: [{
-                            display: true
-                        }],
-                        yAxes: [{
-                            display: false
-                        }]
-                    },
-                    elements: {
-                        line: {
-                            tension: 0
-                        }
-                    },
-                    tooltips: {
-                        callbacks: {
-                            label: function(t,d){
-                                return d.datasets[t.datasetIndex].label + ': ' + t.yLabel.toLocaleString();
-                            }
-                        }
-                    }
-                }
-            };
-        
-        // the very last one
-        new Chart(ctx, config);
     },
     
-    genGraphLabel: function(rows, res){
-        var vals = {};
-        
-        for(var k in rows){
-            var row    = rows[k];
-            var dims   = row.dimensions;
-            
-            for(var l in dims){
-                if(!vals[l])
-                    vals[l] = [];
-                if(!~vals[l].indexOf(dims[l]))
-                    vals[l].push(dims[l]);
-            }
-        }
-        
-        var usedVals = [];
-        for(var k in vals){
-            if(vals[k].length > 1)
-                usedVals.push(k);
-        }
-        
-        var rowsId = Object.keys(rows);
-        rowsId = rowsId.sort();
-        
-        var labels = [];
-        
-        var isYear = ~usedVals.indexOf('ga:year');
-        var isDay  = ~usedVals.indexOf('ga:day');
-        var isMonth= ~usedVals.indexOf('ga:month') || isDay;
-        var isHour = ~usedVals.indexOf('ga:hour');
-        var hourOnly = !isDay && !isMonth && !isYear;
-        
-        for(var i=0; i<rowsId.length; i++){
-            var row = rows[rowsId[i]];
-            var dims= row.dimensions;
-            
-            var label = '';
-            
-            if(isMonth)
-                label+= D.months[dims['ga:month']];
-            
-            if(isDay){
-                if(isMonth)
-                    label+= ' ';
-                label+= dims['ga:day'];
-            }
-            
-            if(isYear){
-                if(isDay)
-                    label+= ', ';
-                else if(isMonth)
-                    label+= ' ';
-                label+= dims['ga:year'];
-            }
-            
-            if(isHour){
-                if(!hourOnly)
-                    label+= ' ';
-                label+= dims['ga:hour'] + ':00';
-            }
-            
-            labels.push(label);
-        }
-        
-        return labels;
-    },
-    
-    genGraphDataset: function(rows, res){
-        var datasets = [];
-        
-        var matrix = res.columnHeader.metricHeader.metricHeaderEntries;
-        
-        for(var i=0; i<matrix.length; i++){
-            var matr = matrix[i];
-            
-            datasets.push({
-                label: D.labels[matr.name],
-                backgroundColor: D.colors[i],
-                borderColor: D.colors[i],
-                data: [],
-                fill: false
-            });
-        }
-        
-        var rowsId = Object.keys(rows);
-        rowsId = rowsId.sort();
-        
-        for(var i=0; i<rowsId.length; i++){
-            var row = rows[rowsId[i]];
-            var rowMatrix = row.matrix;
-            
-            for(var j=0; j<matrix.length; j++){
-                var matr = matrix[j];
-                datasets[j].data.push( rowMatrix[matr.name] );
-            }
-        }
-        
-        return datasets;
-    },
-    
-    genResult: function(res){
-        var reports = res.reports[0];
-        
+    genResult: function(result){
+        var reports = result.reports[0];
         D.genResume(reports);
         D.genGraph(reports);
+        
     },
     
-    genResume: function(res){
-        D.el.resumeTotal.html('');
-        D.el.resumeAverage.html('');
+    genResume: function(reports){
+        D.el.rResultInfo.text(D.labels[D.current.type]);
+        var data    = reports.data;
+        var rows    = data.rows;
+        var rcount  = data.rowCount;
         
-        var rows = res.data.totals[0].values;
-        var mats = res.columnHeader.metricHeader.metricHeaderEntries;
-        
-        var ttls = [];
+        var trows   = {};
         
         for(var i=0; i<rows.length; i++){
-            var tr = $('<tr></tr>');
-            tr.appendTo(D.el.resumeTotal);
+            var row = rows[i];
+            var metrics = row.metrics[0].values;
+            var diment  = row.dimensions[row.dimensions.length-1];
             
-            var th = $('<th></th>');
-            th.text( D.labels[ mats[i].name ] );
-            th.appendTo(tr);
-            ttls.push(D.labels[ mats[i].name ]);
+            if(D.current.type == 'pageview')
+                diment = '';
             
-            var td = $('<td class="text-right"></td>');
-            td.html( parseInt(rows[i]).toLocaleString() );
-            td.appendTo(tr);
+            if(!trows[diment])
+                trows[diment] = [[0,0,0], [0,0,0]];
+            
+            for(var j=0; j<metrics.length; j++)
+                trows[diment][0][j]+= parseInt(metrics[j]);
         }
         
-        var avgs = [0,0,0];
-        for(var i=0; i<res.data.rowCount; i++){
-            var row = res.data.rows[i].metrics[0].values;
-            for(var j=0; j<row.length; j++)
-                avgs[j]+= parseInt(row[j]);
+        for(var k in trows){
+            for(var i=0; i<trows[k][0].length; i++)
+                trows[k][1][i] = Math.ceil( trows[k][0][i] / rcount );
         }
         
-        for(var i=0; i<avgs.length; i++){
-            var tr = $('<tr></tr>');
-            tr.appendTo(D.el.resumeAverage);
+        var trowsSortable = [];
+        for(var k in trows)
+            trowsSortable.push({label: k,data : trows[k]});
+        
+        trowsSortable.sort(function(a,b){
+            return b.data[0][0] - a.data[0][0];
+        });
+        
+        D.el.rResultItems.html('');
+        for(var i=0; i<trowsSortable.length; i++){
+            var row = trowsSortable[i];
+            var label = row.label;
+            var data = row.data;
             
-            var th = $('<th></th>');
-            th.text( ttls[i] );
-            th.appendTo(tr);
+            var tr = $('<tr/>').appendTo(D.el.rResultItems);
+            $('<td/>').html(label).appendTo(tr);
             
-            var td = $('<td class="text-right"></td>');
-            td.html( (Math.ceil(avgs[i]/res.data.rowCount)).toLocaleString() );
-            td.appendTo(tr);
+            for(var j=0; j<data[0].length; j++){
+                $('<td/>',{class:'text-right', html: data[0][j].toLocaleString()}).appendTo(tr);
+                $('<td/>',{class:'text-right', html: data[1][j].toLocaleString()}).appendTo(tr);
+            }
         }
+        
+        D.el.rResult.removeClass('hidden');
     },
     
-    loading: function(s){
-        s
-        ? D.el.graph.html('<div class="progress"><div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 100%">Fetching data...</div></div>')
-        : D.el.graph.html('');
+    init: function(){
+        if(!window.gapi || !window.MyGA || !window.MyGA.token)
+            return;
+        if(!window.MyGA.view)
+            return D.alert('Whoops', 'Please fill site setting <code>google_analytics_view</code> to continue.');
+        
+        gapi.auth.setToken({access_token: MyGA.token});
+        
+        // get all our elements
+        D.el.form           = $('#ga-filter');
+        D.el.fTimeStart     = $('#field-time-start');
+        D.el.fTimeEnd       = $('#field-time-end');
+        D.el.fType          = $('#field-type');
+        D.el.fGroup         = $('#field-group');
+        
+        D.el.rGraph         = $('#graph');
+        D.el.rResult        = $('#resume');
+        D.el.rResultInfo    = $('#resume-info');
+        D.el.rResultItems   = $('#resume-items');
+        
+        D.el.fTimeStart.parent().on('dp.change', D.onFTimeChange );
+        D.el.fTimeEnd.parent().on('dp.change', D.onFTimeChange );
+        D.el.fType.change(D.onFTypeChange);
+        
+        D.onFTypeChange();
+        
+        D.el.form.submit(D.fetch);
+        D.el.form.submit();
     },
     
-    timeChange: function(){
-        var start = new Date(D.el.fTStart.val());
-        var end   = new Date(D.el.fTEnd.val());
+    loading: function(show){
+        D._isLoading = show;
+        
+        show
+            ? D.el.rGraph.html(
+                '<div class="progress">' +
+                    '<div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 100%">' +
+                        'Fetching data...' +
+                    '</div>' +
+                '</div>')
+            : D.el.rGraph.html('');
+    },
+    
+    onFTypeChange: function(){
+        var opts = [['daily', 'Daily'], ['monthly', 'Monthly'], ['yearly', 'Yearly']];
+        if(D.el.fType.val() == 'pageview')
+            opts.unshift(['hourly', 'Hourly']);
+        var ov = D.el.fGroup.val();
+        D.el.fGroup.html('');
+        
+        for(var i=0; i<opts.length; i++){
+            var attr = {value: opts[i][0], text: opts[i][1]};
+            if(opts[i][0] == ov)
+                attr.selected = 'selected';
+            D.el.fGroup.append($('<option/>', attr));
+        }
+        
+        D.el.fGroup.selectpicker('refresh');
+    },
+    
+    onFTimeChange: function(){
+        var start = new Date(D.el.fTimeStart.val());
+        var end   = new Date(D.el.fTimeEnd.val());
         
         if(start.getFullYear() != end.getFullYear())
             return D.el.fGroup.selectpicker('val', 'yearly');
+        
         if(start.getMonth() != end.getMonth())
             return D.el.fGroup.selectpicker('val', 'monthly');
+        
         if(start.getDate() != end.getDate())
             return D.el.fGroup.selectpicker('val', 'daily');
+        
         return D.el.fGroup.selectpicker('val', 'hourly');
     }
-}
+};
 
 function gaInit(){
     D.init();

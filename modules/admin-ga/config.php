@@ -81,6 +81,18 @@ return [
                 'nolabel'   => true,
                 'rules'     => []
             ],
+            'type' => [
+                'type'      => 'select',
+                'nolabel'   => true,
+                'label'     => 'Type',
+                'options'   => [
+                    'pageview'  => 'Pageview',
+                    'gender'    => 'Gender',
+                    'age'       => 'Age',
+                    'country'   => 'Country'
+                ],
+                'rules'     => []
+            ],
             'group' => [
                 'type'      => 'select',
                 'nolabel'   => true,

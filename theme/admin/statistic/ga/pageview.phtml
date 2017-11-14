@@ -1,5 +1,5 @@
 <?php $this->partial('shared/header'); ?>
-
+<style>.table>thead>tr>th{ vertical-align: middle; }</style>
 <div class="container">
     <div class="row">
         <div class="col-md-3">
@@ -7,6 +7,7 @@
             <form id="ga-filter">
                 <?= $this->form->field('time-start'); ?>
                 <?= $this->form->field('time-end'); ?>
+                <?= $this->form->field('type'); ?>
                 <div class="row">
                     <div class="col-md-8">
                         <?= $this->form->field('group'); ?>
@@ -19,22 +20,6 @@
                 </div>
             </form>
             
-            <hr>
-            
-            <div class="panel panel-default">
-                <div class="panel-heading">Total</div>
-                <table class="table table-bordered">
-                    <tbody id="resume-total"></tbody>
-                </table>
-            </div>
-            
-            <div class="panel panel-default">
-                <div class="panel-heading">Average</div>
-                <table class="table table-bordered">
-                    <tbody id="resume-average"></tbody>
-                </table>
-            </div>
-            
         </div>
         <div class="col-md-9">
             <div class="page-header">
@@ -45,6 +30,27 @@
             <div class="alert alert-danger"><strong>Error!</strong> <?= $error ?></div>
             <?php else: ?>
             <div id="graph"></div>
+            <div id="resume" class="hidden">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" id="resume-info" class="text-center"></th>
+                            <th colspan="2" class="text-center">Pageviews</th>
+                            <th colspan="2" class="text-center">Sessions</th>
+                            <th colspan="2" class="text-center">Users</th>
+                        </tr>
+                        <tr>
+                            <th>Total</th>
+                            <th>Average</th>
+                            <th>Total</th>
+                            <th>Average</th>
+                            <th>Total</th>
+                            <th>Average</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resume-items"></tbody>
+                </table>
+            </div>
             <?php endif; ?>
         </div>
     </div>
